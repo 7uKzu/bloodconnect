@@ -8,17 +8,18 @@ async function seedAdminIfNeeded() {
   const adminEmail = 'admin@bloodconnect.com';
 
   const adminRole = await Role.findOne({ where: { name: 'Admin' } });
+
   if (!adminRole) {
-    console.error('Admin role not found. Roles must exist first.');
-    return;
+    console.error('❌ Admin role not found. Roles table is empty.');
+    throw new Error('Admin role missing');
   }
 
-  const existingAdmin = await User.findOne({
+  const existing = await User.findOne({
     where: { email: adminEmail },
   });
 
-  if (existingAdmin) {
-    console.log('Admin already exists');
+  if (existing) {
+    console.log('ℹ️ Admin already exists');
     return;
   }
 
@@ -32,14 +33,14 @@ async function seedAdminIfNeeded() {
     status: 'active',
   });
 
-  console.log('Admin user seeded');
+  console.log('✅ Admin user seeded');
 }
 
 async function startServer() {
-  // Ensure DB connection
+  // DB connection
   await sequelize.authenticate();
 
-  // 🔴 TEMPORARY: seed admin if missing
+  // 🔴 TEMP: seed admin
   await seedAdminIfNeeded();
 
   const PORT = process.env.PORT || 4000;
