@@ -1,38 +1,46 @@
 import { createApp } from './app.js';
 import logger from './config/logger.js';
 import { sequelize } from './config/database.js';
-import { User } from './models/index.js';
+import { User, Role } from './models/index.js';
+import bcrypt from 'bcryptjs';
 
-/* =======================
-   ONE-TIME ADMIN FIX
-======================= */
-async function ensureAdmin() {
-  const admin = await User.findOne({
-    where: { email: 'admin@bloodconnect.com' },
-  });
+async function seedAdminIfNeeded() {
+  const adminEmail = 'admin@bloodconnect.com';
 
-  if (!admin) {
-    console.log('Admin user not found');
+  const adminRole = await Role.findOne({ where: { name: 'Admin' } });
+  if (!adminRole) {
+    console.error('Admin role not found. Roles must exist first.');
     return;
   }
 
-  if (admin.role_id !== 5 || admin.status !== 'active') {
-    admin.role_id = 5;   // Admin role
-    admin.status = 'active';
-    await admin.save();
-    console.log('Admin user fixed');
+  const existingAdmin = await User.findOne({
+    where: { email: adminEmail },
+  });
+
+  if (existingAdmin) {
+    console.log('Admin already exists');
+    return;
   }
+
+  const hash = await bcrypt.hash('admin123', 10);
+
+  await User.create({
+    email: adminEmail,
+    password_hash: hash,
+    full_name: 'System Admin',
+    RoleId: adminRole.id,
+    status: 'active',
+  });
+
+  console.log('Admin user seeded');
 }
 
-/* =======================
-   SERVER START
-======================= */
 async function startServer() {
-  // Ensure DB is reachable
+  // Ensure DB connection
   await sequelize.authenticate();
 
-  // 🔴 TEMPORARY DATA REPAIR
-  await ensureAdmin();
+  // 🔴 TEMPORARY: seed admin if missing
+  await seedAdminIfNeeded();
 
   const PORT = process.env.PORT || 4000;
   const { httpServer } = await createApp();
