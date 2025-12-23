@@ -55,7 +55,7 @@ export async function login(req, res) {
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 
-    if (user.status !== 'approved')
+    if (!['approved', 'active'].includes(user.status))
       return res.status(403).json({ message: 'Awaiting Approval' });
 
     const { accessToken, refreshToken } = signTokens(user);
