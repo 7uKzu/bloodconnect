@@ -16,9 +16,11 @@ import { errorHandler } from './middleware/error.js';
 
 export async function createApp() {
   const app = express();
+
+  app.set('trust proxy', 1);
+  
   app.use(helmet());
 
- 
   app.use(cors({
     origin: true,          // Reflects the incoming origin → always allowed
     credentials: true,     // Important for future cookies / auth headers
