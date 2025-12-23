@@ -4,15 +4,41 @@ import { Role, User } from './models/index.js';
 import bcrypt from 'bcryptjs';
 import logger from './config/logger.js';
 
+async function seedRolesOnce() {
+  const now = new Date();
+
+  const roles = [
+    { id: 1, name: 'Donor' },
+    { id: 2, name: 'Recipient' },
+    { id: 3, name: 'Technician' },
+    { id: 4, name: 'Staff' },
+    { id: 5, name: 'Admin' },
+    { id: 6, name: 'MedicalStaff' },
+  ];
+
+  for (const role of roles) {
+    await Role.findOrCreate({
+      where: { id: role.id },
+      defaults: {
+        name: role.name,
+        created_at: now,
+        updated_at: now,
+      },
+    });
+  }
+
+  console.log('Roles ensured');
+}
+
 async function seedAdminOnce() {
   const adminRole = await Role.findOne({ where: { name: 'Admin' } });
   if (!adminRole) {
-    throw new Error('Admin role not found');
+    throw new Error('Admin role missing AFTER role seeding');
   }
 
   const email = 'admin@bloodconnect.com';
 
-  const [admin, created] = await User.findOrCreate({
+  await User.findOrCreate({
     where: { email },
     defaults: {
       email,
@@ -23,19 +49,15 @@ async function seedAdminOnce() {
     },
   });
 
-  if (created) {
-    console.log('Admin user created');
-  } else {
-    console.log('Admin user already exists');
-  }
+  console.log('Admin ensured');
 }
 
 async function startServer() {
   try {
-    // TEMPORARY DB INIT
-    await sequelize.sync({ alter: true });
-    await seedAdminOnce();
-    console.log('DB initialized (admin ensured)');
+    await sequelize.sync({ alter: true }); // tables
+    await seedRolesOnce();                 // roles
+    await seedAdminOnce();                 // admin
+    console.log('DB initialized');
   } catch (e) {
     console.error('DB init failed');
     console.error(e);
