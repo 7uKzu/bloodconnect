@@ -93,10 +93,19 @@ export async function declineRequest(req, res) {
   const { id } = req.params;
   const request = await Request.findByPk(id);
   if (!request) return res.status(404).json({ message: 'Not found' });
-  request.status = 'open'; // or 'declined'
+
+  request.status = 'open';
   await request.save();
+
+  await AuditLog.create({
+    actor_id: req.user.id,
+    action: 'REQUEST_DECLINED',
+    details: `Declined request ID ${request.id}`,
+  });
+
   res.json({ message: 'Request declined' });
 }
+
 
 export async function listIncoming(req, res) {
   try {
