@@ -1,4 +1,4 @@
-import { User, Role } from '../models/index.js';
+import { User, Role, AuditLog } from '../models/index.js';
 
 export async function listPending(req, res) {
   try {
@@ -19,7 +19,7 @@ export async function listPending(req, res) {
         status: u.status,
       }))
     );
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Failed to fetch pending users' });
   }
 }
@@ -33,8 +33,15 @@ export async function approveUser(req, res) {
     user.status = 'approved';
     await user.save();
 
+    await AuditLog.create({
+      actor_id: req.user.id,
+      action: 'USER_APPROVED',
+      details: `Approved user ${user.email} (ID ${user.id})`,
+    });
+
     res.json({ message: 'User approved successfully' });
-  } catch (error) {
+  } catch (e) {
+    console.error(e);
     res.status(500).json({ message: 'Failed to approve user' });
   }
 }
@@ -45,9 +52,16 @@ export async function rejectUser(req, res) {
     const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    await AuditLog.create({
+      actor_id: req.user.id,
+      action: 'USER_REJECTED',
+      details: `Rejected user ${user.email} (ID ${user.id})`,
+    });
+
     await user.destroy();
     res.json({ message: 'User rejected and deleted' });
-  } catch (error) {
+  } catch (e) {
+    console.error(e);
     res.status(500).json({ message: 'Failed to reject user' });
   }
 }
