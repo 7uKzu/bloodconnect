@@ -65,7 +65,13 @@ export async function acceptRequest(req, res) {
       donated_at: new Date(),
       status: 'pending',
     });
-    
+
+    await AuditLog.create({
+      actor_id: req.user.id,
+      action: 'REQUEST_ACCEPTED',
+      details: `Accepted request ID ${request.id}`,
+    });
+
     const io = req.app.get('io');
     if (io) {
       io.emit('request_updated', {
@@ -76,7 +82,8 @@ export async function acceptRequest(req, res) {
     }
 
     res.json({ message: 'Request accepted successfully' });
-  } catch {
+  } catch (e) {
+    console.error(e);
     res.status(500).json({ message: 'Server error' });
   }
 }
