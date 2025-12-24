@@ -126,6 +126,12 @@ router.post(
         blood_group: donation.blood_group,
         status: 'available',
       });
+      
+      await AuditLog.create({
+        actor_id: req.user.id,
+        action: 'DONATION_CONFIRMED',
+        details: `Confirmed donation ID ${donation.id}`,
+      });
 
       res.json({ message: 'Donation confirmed and inventory updated' });
     } catch (error) {
