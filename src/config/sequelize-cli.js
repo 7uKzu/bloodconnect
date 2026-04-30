@@ -1,16 +1,18 @@
 import 'dotenv/config';
 
-if (!process.env.MYSQL_URL) {
-  throw new Error('MYSQL_URL is not defined');
+const connectionString = process.env.MYSQL_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error('MYSQL_URL or DATABASE_URL is not defined');
 }
 
 export default {
   development: {
-    url: process.env.MYSQL_URL,
+    url: connectionString,
     dialect: 'mysql',
   },
   production: {
-    url: process.env.MYSQL_URL,
+    url: connectionString,
     dialect: 'mysql',
   },
 };
