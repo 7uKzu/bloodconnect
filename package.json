@@ -4,8 +4,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "npm run migrate && npm run seed && node src/index.js",
-    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "start": "npm run migrate && npm run seed && node src/index.js",
     "migrate": "sequelize db:migrate",
     "seed": "sequelize db:seed:all",
     "swagger": "node scripts/build-swagger.js"
