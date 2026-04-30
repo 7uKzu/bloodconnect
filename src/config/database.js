@@ -1,12 +1,10 @@
 import { Sequelize } from 'sequelize';
 
-const connectionString = process.env.MYSQL_URL || process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error('MYSQL_URL or DATABASE_URL is not defined');
+if (!process.env.MYSQL_URL) {
+  throw new Error('MYSQL_URL is not defined');
 }
 
-export const sequelize = new Sequelize(connectionString, {
+export const sequelize = new Sequelize(process.env.MYSQL_URL, {
   dialect: 'mysql',
   logging: false,
   pool: {
