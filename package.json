@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "migrate": "sequelize db:migrate",
-    "seed": "sequelize db:seed:all",
+    "migrate": "npx sequelize db:migrate",
+    "seed": "npx sequelize db:seed:all",
     "swagger": "node scripts/build-swagger.js"
   },
   "dependencies": {
